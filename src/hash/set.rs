@@ -23,7 +23,12 @@
 
 use std::borrow::Borrow;
 use std::cmp::Ordering;
-use std::collections::hash_map::RandomState;
+
+#[cfg(feature = "consistent")]
+pub use crate::hash::state::ConsistentState as State;
+#[cfg(not(feature = "consistent"))]
+pub use std::collections::hash_map::RandomState as State;
+
 use std::collections::{self, BTreeSet};
 use std::fmt::{Debug, Error, Formatter};
 use std::hash::{BuildHasher, Hash, Hasher};
@@ -33,8 +38,8 @@ use std::ops::{Add, Deref, Mul};
 
 use crate::nodes::hamt::{hash_key, Drain as NodeDrain, HashValue, Iter as NodeIter, Node};
 use crate::ordset::OrdSet;
-use crate::Vector;
 use crate::util::{Pool, PoolRef, Ref};
+use crate::Vector;
 
 /// Construct a set from a sequence of values.
 ///
@@ -91,7 +96,7 @@ def_pool!(HashSetPool<A>, Node<Value<A>>);
 /// [std::cmp::Eq]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
 /// [std::hash::Hash]: https://doc.rust-lang.org/std/hash/trait.Hash.html
 /// [std::collections::hash_map::RandomState]: https://doc.rust-lang.org/std/collections/hash_map/struct.RandomState.html
-pub struct HashSet<A, S = RandomState> {
+pub struct HashSet<A, S = State> {
     hasher: Ref<S>,
     pool: HashSetPool<A>,
     root: PoolRef<Node<Value<A>>>,
@@ -125,7 +130,7 @@ where
     }
 }
 
-impl<A> HashSet<A, RandomState> {
+impl<A> HashSet<A, State> {
     /// Construct an empty set.
     #[must_use]
     pub fn new() -> Self {
@@ -145,7 +150,7 @@ impl<A> HashSet<A, RandomState> {
     }
 }
 
-impl<A> HashSet<A, RandomState>
+impl<A> HashSet<A, State>
 where
     A: Hash + Eq + Clone,
 {
@@ -1094,6 +1099,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "consistent")]
     fn set_composition_is_possible() {
         for _ in 0..1000 {
             let set1 = hashset! {hashset!{"foo", "bar"}};

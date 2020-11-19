@@ -24,7 +24,12 @@
 use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::collections;
-use std::collections::hash_map::RandomState;
+
+#[cfg(feature = "consistent")]
+pub use crate::hash::state::ConsistentState as State;
+#[cfg(not(feature = "consistent"))]
+pub use std::collections::hash_map::RandomState as State;
+
 use std::fmt::{Debug, Error, Formatter};
 use std::hash::{BuildHasher, Hash, Hasher};
 use std::iter::{FromIterator, FusedIterator, Sum};
@@ -97,7 +102,7 @@ def_pool!(HashMapPool<K,V>, Node<(K,V)>);
 /// [std::hash::Hash]: https://doc.rust-lang.org/std/hash/trait.Hash.html
 /// [std::collections::hash_map::RandomState]: https://doc.rust-lang.org/std/collections/hash_map/struct.RandomState.html
 
-pub struct HashMap<K, V, S = RandomState> {
+pub struct HashMap<K, V, S = State> {
     size: usize,
     pool: HashMapPool<K, V>,
     root: PoolRef<Node<(K, V)>>,
@@ -119,7 +124,7 @@ where
     }
 }
 
-impl<K, V> HashMap<K, V, RandomState> {
+impl<K, V> HashMap<K, V, State> {
     /// Construct an empty hash map.
     #[inline]
     #[must_use]
@@ -141,7 +146,7 @@ impl<K, V> HashMap<K, V, RandomState> {
     }
 }
 
-impl<K, V> HashMap<K, V, RandomState>
+impl<K, V> HashMap<K, V, State>
 where
     K: Hash + Eq + Clone,
     V: Clone,
@@ -2176,6 +2181,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "consistent")]
     fn map_composition_is_possible() {
         for _ in 0..1000 {
             let map1 = hashmap! {hashmap! {"x" => 1, "y" => 2} => 3};

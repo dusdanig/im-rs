@@ -6,3 +6,5 @@
 pub mod map;
 #[macro_use]
 pub mod set;
+#[cfg(feature = "consistent")]
+pub(crate) mod state;
