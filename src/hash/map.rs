@@ -2176,6 +2176,15 @@ mod test {
     }
 
     #[test]
+    fn map_composition_is_possible() {
+        for _ in 0..1000 {
+            let map1 = hashmap! {hashmap! {"x" => 1, "y" => 2} => 3};
+            let map2 = hashmap! {hashmap! {"x" => 1, "y" => 2} => 3};
+            assert_eq!(map1, map2);
+        }
+    }
+
+    #[test]
     fn remove_top_level_collisions() {
         let pairs = vec![9, 2569, 27145];
         let mut map: HashMap<i16, i16, BuildHasherDefault<LolHasher>> = Default::default();

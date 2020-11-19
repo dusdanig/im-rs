@@ -1094,6 +1094,15 @@ mod test {
     }
 
     #[test]
+    fn set_composition_is_possible() {
+        for _ in 0..1000 {
+            let set1 = hashset! {hashset!{"foo", "bar"}};
+            let set2 = hashset! {hashset!{"foo", "bar"}};
+            assert_eq!(set1, set2);
+        }
+    }
+
+    #[test]
     fn issue_60_drain_iterator_memory_corruption() {
         use crate::test::MetroHashBuilder;
         for i in 0..1000 {
